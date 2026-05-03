@@ -1,5 +1,3 @@
-# Frontend → Backend → Azure PostgreSQL (external)
-# Frontend cannot reach Azure DB directly
 
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -31,7 +29,7 @@ spec:
   egress:
     - ports:         # Allow outbound to Azure PostgreSQL (external)
         - protocol: TCP
-          port: 5432
+          port: 3306
     - ports:         # DNS
         - protocol: UDP
           port: 53

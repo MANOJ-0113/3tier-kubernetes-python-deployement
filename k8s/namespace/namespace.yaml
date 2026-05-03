@@ -5,4 +5,4 @@ metadata:
   labels:
     app: hospital-management
     stack: python-flask
-    database: azure-postgresql
+    database: azure-mysql
