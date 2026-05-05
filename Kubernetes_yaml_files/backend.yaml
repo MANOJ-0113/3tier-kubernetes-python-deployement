@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: saimanoj0113/hospital-backend:latest  
+          image: udayreddychalla/3tier-kubernetes-python-deployement_backend_repo:latest 
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000
