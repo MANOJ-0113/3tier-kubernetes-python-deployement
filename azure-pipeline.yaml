@@ -79,7 +79,7 @@ stages:
         - task: Docker@2
           displayName: Build & Push Frontend Image
           inputs:
-            containerRegistry: dockerhub-connection
+            containerRegistry: manoj-docker-connection
             repository: $(FRONTEND_IMAGE)
             command: buildAndPush
             Dockerfile: frontend/Dockerfile
@@ -104,7 +104,7 @@ stages:
         - task: Docker@2
           displayName: Build & Push Backend Image
           inputs:
-            containerRegistry: dockerhub-connection
+            containerRegistry: manoj-docker-connection
             repository: $(BACKEND_IMAGE)
             command: buildAndPush
             Dockerfile: backend/Dockerfile
