@@ -21,6 +21,10 @@ stages:
 # STAGE 1 — SONARQUBE CODE SCAN
 # =========================================================
 
+# =========================================================
+# STAGE 1 — SONARQUBE CODE SCAN
+# =========================================================
+
 - stage: SonarQubeScan
   displayName: SonarQube Code Analysis
 
@@ -28,18 +32,6 @@ stages:
     - job: SonarScan
 
       steps:
-
-        # ============================================
-        # PREPARE SONARQUBE ANALYSIS
-        # ============================================
-
-        - task: SonarQubePrepare@7
-          inputs:
-            SonarQube: 'sonarqube-connection'
-            scannerMode: 'CLI'
-            configMode: 'manual'
-            cliProjectKey: 'hospital-management'
-            cliProjectName: 'hospital-management'
 
         # ============================================
         # INSTALL PYTHON DEPENDENCIES
@@ -50,18 +42,17 @@ stages:
           displayName: Install Python Dependencies
 
         # ============================================
-        # RUN SONARQUBE ANALYSIS
+        # RUN SONARQUBE SCAN USING CLI
         # ============================================
 
-        - task: SonarQubeAnalyze@7
-
-        # ============================================
-        # PUBLISH SONARQUBE QUALITY GATE
-        # ============================================
-
-        - task: SonarQubePublish@7
-          inputs:
-            pollingTimeoutSec: '300'
+        - script: |
+            sonar-scanner \
+            -Dsonar.projectKey=hospital-management \
+            -Dsonar.projectName=hospital-management \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=http://52.141.58.181:9000 \
+            -Dsonar.token=<YOUR-SONAR-TOKEN>
+          displayName: Run SonarQube Scan
 
 # =========================================================
 # STAGE 2 — BUILD & PUSH FRONTEND IMAGE
