@@ -1,0 +1,181 @@
+trigger:
+  branches:
+    include:
+      - main
+
+# =========================================================
+# SELF-HOSTED AGENT POOL
+# =========================================================
+
+pool:
+  name: hospital-agent-pool
+
+variables:
+  FRONTEND_IMAGE: udayreddychalla/3tier-kubernetes-python-deployement_frontend_repo
+  BACKEND_IMAGE: udayreddychalla/3tier-kubernetes-python-deployement_backend_repo
+  TAG: $(Build.BuildId)
+
+stages:
+
+# =========================================================
+# STAGE 1 — SONARQUBE CODE SCAN
+# =========================================================
+
+- stage: SonarQubeScan
+  displayName: SonarQube Code Analysis
+
+  jobs:
+    - job: SonarScan
+
+      steps:
+
+        - task: SonarQubePrepare@5
+          inputs:
+            SonarQube: 'sonarqube-connection'
+            scannerMode: 'CLI'
+            configMode: 'manual'
+            cliProjectKey: 'hospital-management'
+            cliProjectName: 'hospital-management'
+
+        - script: |
+            pip3 install -r backend/requirements.txt
+          displayName: Install Python Dependencies
+
+        - task: SonarQubeAnalyze@5
+
+        - task: SonarQubePublish@5
+          inputs:
+            pollingTimeoutSec: '300'
+
+# =========================================================
+# STAGE 2 — BUILD & PUSH FRONTEND IMAGE
+# =========================================================
+
+- stage: BuildFrontend
+  displayName: Build Frontend Image
+  dependsOn: SonarQubeScan
+
+  jobs:
+    - job: Frontend
+
+      steps:
+
+        - task: Docker@2
+          displayName: Build & Push Frontend Image
+          inputs:
+            containerRegistry: dockerhub-connection
+            repository: $(FRONTEND_IMAGE)
+            command: buildAndPush
+            Dockerfile: frontend/Dockerfile
+            buildContext: frontend
+            tags: |
+              $(TAG)
+              latest
+
+# =========================================================
+# STAGE 3 — BUILD & PUSH BACKEND IMAGE
+# =========================================================
+
+- stage: BuildBackend
+  displayName: Build Backend Image
+  dependsOn: SonarQubeScan
+
+  jobs:
+    - job: Backend
+
+      steps:
+
+        - task: Docker@2
+          displayName: Build & Push Backend Image
+          inputs:
+            containerRegistry: dockerhub-connection
+            repository: $(BACKEND_IMAGE)
+            command: buildAndPush
+            Dockerfile: backend/Dockerfile
+            buildContext: backend
+            tags: |
+              $(TAG)
+              latest
+
+# =========================================================
+# STAGE 4 — TRIVY SECURITY SCAN
+# =========================================================
+
+- stage: TrivySecurityScan
+  displayName: Trivy Container Scan
+  dependsOn:
+    - BuildFrontend
+    - BuildBackend
+
+  jobs:
+    - job: TrivyScan
+
+      steps:
+
+        - script: |
+            docker pull $(FRONTEND_IMAGE):latest
+            trivy image --exit-code 1 --severity CRITICAL,HIGH $(FRONTEND_IMAGE):latest
+          displayName: Scan Frontend Image
+
+        - script: |
+            docker pull $(BACKEND_IMAGE):latest
+            trivy image --exit-code 1 --severity CRITICAL,HIGH $(BACKEND_IMAGE):latest
+          displayName: Scan Backend Image
+
+# =========================================================
+# STAGE 5 — DEPLOY TO AKS
+# =========================================================
+
+- stage: DeployToAKS
+  displayName: Deploy Application to AKS
+
+  dependsOn:
+    - TrivySecurityScan
+
+  jobs:
+    - deployment: Deploy
+
+      displayName: Kubernetes Deployment
+      environment: production
+
+      strategy:
+        runOnce:
+          deploy:
+
+            steps:
+
+              # ============================================
+              # DEPLOY BACKEND
+              # ============================================
+
+              - task: KubernetesManifest@1
+                displayName: Deploy Backend
+
+                inputs:
+                  action: deploy
+                  kubernetesServiceConnection: hospital-aks-connection
+                  namespace: hospital-system
+
+                  manifests: |
+                    Kubernetes_yaml_files/backend/backend.yaml
+
+                  containers: |
+                    $(BACKEND_IMAGE):$(TAG)
+
+              # ============================================
+              # DEPLOY FRONTEND
+              # ============================================
+
+              - task: KubernetesManifest@1
+                displayName: Deploy Frontend
+
+                inputs:
+                  action: deploy
+                  kubernetesServiceConnection: hospital-aks-connection
+                  namespace: hospital-system
+
+                  manifests: |
+                    Kubernetes_yaml_files/frontend/frontend.yaml
+
+                  containers: |
+                    $(FRONTEND_IMAGE):$(TAG)
