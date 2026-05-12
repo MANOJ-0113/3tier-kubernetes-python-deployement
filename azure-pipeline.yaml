@@ -29,7 +29,11 @@ stages:
 
       steps:
 
-        - task: SonarQubePrepare@5
+        # ============================================
+        # PREPARE SONARQUBE ANALYSIS
+        # ============================================
+
+        - task: SonarQubePrepare@7
           inputs:
             SonarQube: 'sonarqube-connection'
             scannerMode: 'CLI'
@@ -37,13 +41,25 @@ stages:
             cliProjectKey: 'hospital-management'
             cliProjectName: 'hospital-management'
 
+        # ============================================
+        # INSTALL PYTHON DEPENDENCIES
+        # ============================================
+
         - script: |
             pip3 install -r backend/requirements.txt
           displayName: Install Python Dependencies
 
-        - task: SonarQubeAnalyze@5
+        # ============================================
+        # RUN SONARQUBE ANALYSIS
+        # ============================================
 
-        - task: SonarQubePublish@5
+        - task: SonarQubeAnalyze@7
+
+        # ============================================
+        # PUBLISH SONARQUBE QUALITY GATE
+        # ============================================
+
+        - task: SonarQubePublish@7
           inputs:
             pollingTimeoutSec: '300'
 
