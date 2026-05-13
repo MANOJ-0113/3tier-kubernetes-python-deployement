@@ -28,7 +28,7 @@ spec:
           command: ['sh','-c','until nc -z backend-service 5000; do echo waiting for backend; sleep 3; done']
       containers:
         - name: frontend
-          image: udayreddychalla/3tier-kubernetes-python-deployement_backend_repo:latest
+          image: udayreddychalla/3tier-kubernetes-python-deployement_frontend_repo:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 80
