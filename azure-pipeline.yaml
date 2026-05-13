@@ -2,6 +2,7 @@ trigger:
   branches:
     include:
       - master
+      - main
 
 # =========================================================
 # SELF-HOSTED AGENT POOL
