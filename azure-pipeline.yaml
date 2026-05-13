@@ -11,10 +11,16 @@ pool:
   name: hospital-agent-pool
 
 variables:
-  group: sonar-variables
-  FRONTEND_IMAGE: udayreddychalla/3tier-kubernetes-python-deployement_frontend_repo:latest
-  BACKEND_IMAGE: udayreddychalla/3tier-kubernetes-python-deployement_backend_repo:latest
-  TAG: $(Build.BuildId)
+- group: sonar-variables
+
+- name: FRONTEND_IMAGE
+  value: udayreddychalla/3tier-kubernetes-python-deployement_frontend_repo
+
+- name: BACKEND_IMAGE
+  value: udayreddychalla/3tier-kubernetes-python-deployement_backend_repo
+
+- name: TAG
+  value: $(Build.BuildId)
 
 stages:
 
