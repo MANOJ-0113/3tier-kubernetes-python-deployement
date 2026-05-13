@@ -145,9 +145,6 @@ stages:
 # STAGE 5 — DEPLOY TO AKS
 # =========================================================
 
-# =========================================================
-# STAGE 5 — DEPLOY TO AKS
-# =========================================================
 
 - stage: DeployToAKS
   displayName: Deploy Application to AKS
@@ -169,17 +166,67 @@ stages:
           displayName: Verify AKS Connection
 
         # ============================================
-        # DEPLOY KUBERNETES MANIFESTS
+        # CREATE NAMESPACE
         # ============================================
 
         - script: |
-            kubectl apply -f Kubernetes_yaml_files/
-          displayName: Deploy Kubernetes Manifests
+            kubectl apply -f Kubernetes_yaml_files/namespace.yaml
+
+            echo "Waiting for namespace creation..."
+
+            sleep 10
+          displayName: Create Namespace
+
+        # ============================================
+        # DEPLOY CONFIGMAP
+        # ============================================
+
+        - script: |
+            kubectl apply -f Kubernetes_yaml_files/configmap.yaml
+          displayName: Deploy ConfigMap
+
+        # ============================================
+        # DEPLOY SECRETS
+        # ============================================
+
+        - script: |
+            kubectl apply -f Kubernetes_yaml_files/secrets.yaml
+          displayName: Deploy Secrets
+
+        # ============================================
+        # DEPLOY BACKEND
+        # ============================================
+
+        - script: |
+            kubectl apply -f Kubernetes_yaml_files/backend.yaml
+
+            kubectl rollout status deployment/backend \
+            -n hospital-system --timeout=120s
+          displayName: Deploy Backend
+
+        # ============================================
+        # DEPLOY FRONTEND
+        # ============================================
+
+        - script: |
+            kubectl apply -f Kubernetes_yaml_files/frontend.yaml
+
+            kubectl rollout status deployment/frontend \
+            -n hospital-system --timeout=120s
+          displayName: Deploy Frontend
+
+        # ============================================
+        # DEPLOY NETWORK POLICIES
+        # ============================================
+
+        - script: |
+            kubectl apply -f Kubernetes_yaml_files/network-policy.yaml
+          displayName: Deploy Network Policies
 
         # ============================================
         # VERIFY PODS
         # ============================================
 
         - script: |
-            kubectl get pods -n hospital-system
-          displayName: Verify Running Pods
+            kubectl get all -n hospital-system
+          displayName: Verify Kubernetes Resources
