@@ -145,6 +145,10 @@ stages:
 # STAGE 5 — DEPLOY TO AKS
 # =========================================================
 
+# =========================================================
+# STAGE 5 — DEPLOY TO AKS
+# =========================================================
+
 - stage: DeployToAKS
   displayName: Deploy Application to AKS
 
@@ -152,49 +156,30 @@ stages:
     - TrivySecurityScan
 
   jobs:
-    - deployment: Deploy
+    - job: Deploy
 
-      displayName: Kubernetes Deployment
-      environment: production
+      steps:
 
-      strategy:
-        runOnce:
-          deploy:
+        # ============================================
+        # VERIFY CLUSTER CONNECTION
+        # ============================================
 
-            steps:
+        - script: |
+            kubectl get nodes
+          displayName: Verify AKS Connection
 
-              # ============================================
-              # DEPLOY BACKEND
-              # ============================================
+        # ============================================
+        # DEPLOY KUBERNETES MANIFESTS
+        # ============================================
 
-              - task: KubernetesManifest@1
-                displayName: Deploy Backend
+        - script: |
+            kubectl apply -f Kubernetes_yaml_files/
+          displayName: Deploy Kubernetes Manifests
 
-                inputs:
-                  action: deploy
-                  kubernetesServiceConnection: hospital-aks-connection
-                  namespace: hospital-system
+        # ============================================
+        # VERIFY PODS
+        # ============================================
 
-                  manifests: |
-                    Kubernetes_yaml_files/backend/backend.yaml
-
-                  containers: |
-                    $(BACKEND_IMAGE):$(TAG)
-
-              # ============================================
-              # DEPLOY FRONTEND
-              # ============================================
-
-              - task: KubernetesManifest@1
-                displayName: Deploy Frontend
-
-                inputs:
-                  action: deploy
-                  kubernetesServiceConnection: hospital-aks-connection
-                  namespace: hospital-system
-
-                  manifests: |
-                    Kubernetes_yaml_files/frontend/frontend.yaml
-
-                  containers: |
-                    $(FRONTEND_IMAGE):$(TAG)
+        - script: |
+            kubectl get pods -n hospital-system
+          displayName: Verify Running Pods
