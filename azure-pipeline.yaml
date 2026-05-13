@@ -46,7 +46,7 @@ stages:
         # ============================================
 
         - script: |
-            sonar-scanner \
+            /opt/sonar-scanner/bin/sonar-scanner \
             -Dsonar.projectKey=hospital-management \
             -Dsonar.projectName=hospital-management \
             -Dsonar.sources=. \
