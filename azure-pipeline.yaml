@@ -125,12 +125,20 @@ stages:
 
         - script: |
             docker pull $(FRONTEND_IMAGE):latest
-            trivy image --exit-code 1 --severity CRITICAL,HIGH $(FRONTEND_IMAGE):latest
+            trivy image \
+            --scanners vuln \
+            --exit-code 1 \
+            --severity CRITICAL,HIGH \
+            $(FRONTEND_IMAGE):latest
           displayName: Scan Frontend Image
 
         - script: |
             docker pull $(BACKEND_IMAGE):latest
-            trivy image --exit-code 1 --severity CRITICAL,HIGH $(BACKEND_IMAGE):latest
+            trivy image \
+            --scanners vuln \
+            --exit-code 1 \
+            --severity CRITICAL,HIGH \
+            $(BACKEND_IMAGE):latest
           displayName: Scan Backend Image
 
 # =========================================================
