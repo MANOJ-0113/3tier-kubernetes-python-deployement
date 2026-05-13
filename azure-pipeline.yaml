@@ -22,10 +22,6 @@ stages:
 # STAGE 1 — SONARQUBE CODE SCAN
 # =========================================================
 
-# =========================================================
-# STAGE 1 — SONARQUBE CODE SCAN
-# =========================================================
-
 - stage: SonarQubeScan
   displayName: SonarQube Code Analysis
 
@@ -48,13 +44,14 @@ stages:
 
         - script: |
             /opt/sonar-scanner/bin/sonar-scanner \
-            -Dsonar.projectKey=hospital-management \
-            -Dsonar.projectName=hospital-management \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=http://52.141.58.181:9000 \
-            -Dsonar.login=$(SONAR_TOKEN)
+              -Dsonar.projectKey=hospital-management \
+              -Dsonar.projectName=hospital-management \
+              -Dsonar.sources=. \
+              -Dsonar.host.url=http://52.141.58.181:9000 \
+              -Dsonar.login=$SONAR_TOKEN
           displayName: Run SonarQube Scan
-
+          env:
+            SONAR_TOKEN: $(SONAR_TOKEN)
 # =========================================================
 # STAGE 2 — BUILD & PUSH FRONTEND IMAGE
 # =========================================================
