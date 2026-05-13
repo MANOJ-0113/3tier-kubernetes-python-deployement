@@ -214,6 +214,11 @@ stages:
 
             kubectl apply -f Kubernetes_yaml_files/backend.yaml
 
+            echo "Restarting Backend Deployment..."
+
+            kubectl rollout restart deployment/backend \
+            -n hospital-system
+
             echo "Checking Backend Pods..."
 
             kubectl get pods -n hospital-system
@@ -238,6 +243,11 @@ stages:
             echo "Deploying Frontend..."
 
             kubectl apply -f Kubernetes_yaml_files/frontend.yaml
+
+            echo "Restarting Frontend Deployment..."
+
+            kubectl rollout restart deployment/frontend \
+            -n hospital-system
 
             echo "Checking Frontend Pods..."
 
@@ -287,4 +297,9 @@ stages:
             echo "Checking HPA..."
 
             kubectl get hpa -n hospital-system
+
+            echo "Checking Ingress..."
+
+            kubectl get ingress -n hospital-system || true
+
           displayName: Verify Kubernetes Resources
