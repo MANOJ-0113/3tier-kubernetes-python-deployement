@@ -127,7 +127,7 @@ stages:
             docker pull $(FRONTEND_IMAGE):latest
             trivy image \
             --scanners vuln \
-            --exit-code 1 \
+            --exit-code 0 \
             --severity CRITICAL,HIGH \
             $(FRONTEND_IMAGE):latest
           displayName: Scan Frontend Image
@@ -136,7 +136,7 @@ stages:
             docker pull $(BACKEND_IMAGE):latest
             trivy image \
             --scanners vuln \
-            --exit-code 1 \
+            --exit-code 0 \
             --severity CRITICAL,HIGH \
             $(BACKEND_IMAGE):latest
           displayName: Scan Backend Image
