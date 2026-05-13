@@ -145,7 +145,6 @@ stages:
 # STAGE 5 — DEPLOY TO AKS
 # =========================================================
 
-
 - stage: DeployToAKS
   displayName: Deploy Application to AKS
 
@@ -162,6 +161,8 @@ stages:
         # ============================================
 
         - script: |
+            echo "Checking AKS cluster connection..."
+
             kubectl get nodes
           displayName: Verify AKS Connection
 
@@ -170,6 +171,8 @@ stages:
         # ============================================
 
         - script: |
+            echo "Creating Namespace..."
+
             kubectl apply -f Kubernetes_yaml_files/namespace.yaml
 
             echo "Waiting for namespace creation..."
@@ -182,7 +185,11 @@ stages:
         # ============================================
 
         - script: |
+            echo "Deploying ConfigMap..."
+
             kubectl apply -f Kubernetes_yaml_files/configmap.yaml
+
+            kubectl get configmap -n hospital-system
           displayName: Deploy ConfigMap
 
         # ============================================
@@ -190,7 +197,11 @@ stages:
         # ============================================
 
         - script: |
+            echo "Deploying Secrets..."
+
             kubectl apply -f Kubernetes_yaml_files/secrets.yaml
+
+            kubectl get secrets -n hospital-system
           displayName: Deploy Secrets
 
         # ============================================
@@ -198,10 +209,24 @@ stages:
         # ============================================
 
         - script: |
+            echo "Deploying Backend..."
+
             kubectl apply -f Kubernetes_yaml_files/backend.yaml
 
+            echo "Checking Backend Pods..."
+
+            kubectl get pods -n hospital-system
+
+            echo "Describing Backend Deployment..."
+
+            kubectl describe deployment backend -n hospital-system
+
+            echo "Waiting for Backend Rollout..."
+
             kubectl rollout status deployment/backend \
-            -n hospital-system --timeout=120s
+            -n hospital-system --timeout=300s
+
+            echo "Backend Deployment Successful"
           displayName: Deploy Backend
 
         # ============================================
@@ -209,10 +234,28 @@ stages:
         # ============================================
 
         - script: |
+            echo "Deploying Frontend..."
+
             kubectl apply -f Kubernetes_yaml_files/frontend.yaml
 
+            echo "Checking Frontend Pods..."
+
+            kubectl get pods -n hospital-system
+
+            echo "Describing Frontend Deployment..."
+
+            kubectl describe deployment frontend -n hospital-system
+
+            echo "Describing Frontend Pods..."
+
+            kubectl describe pods -n hospital-system
+
+            echo "Waiting for Frontend Rollout..."
+
             kubectl rollout status deployment/frontend \
-            -n hospital-system --timeout=120s
+            -n hospital-system --timeout=300s
+
+            echo "Frontend Deployment Successful"
           displayName: Deploy Frontend
 
         # ============================================
@@ -220,13 +263,27 @@ stages:
         # ============================================
 
         - script: |
+            echo "Deploying Network Policies..."
+
             kubectl apply -f Kubernetes_yaml_files/network-policy.yaml
+
+            kubectl get networkpolicy -n hospital-system
           displayName: Deploy Network Policies
 
         # ============================================
-        # VERIFY PODS
+        # VERIFY ALL RESOURCES
         # ============================================
 
         - script: |
+            echo "Verifying Kubernetes Resources..."
+
             kubectl get all -n hospital-system
+
+            echo "Checking Services..."
+
+            kubectl get svc -n hospital-system
+
+            echo "Checking HPA..."
+
+            kubectl get hpa -n hospital-system
           displayName: Verify Kubernetes Resources
