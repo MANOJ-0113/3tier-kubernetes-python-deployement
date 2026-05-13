@@ -52,7 +52,7 @@ stages:
             -Dsonar.projectName=hospital-management \
             -Dsonar.sources=. \
             -Dsonar.host.url=http://52.141.58.181:9000 \
-            -Dsonar.token=squ_97519ddf1d47fbb58c90108f7e8509d1596aad16
+            -Dsonar.token=$(SONAR_TOKEN)
           displayName: Run SonarQube Scan
 
 # =========================================================
